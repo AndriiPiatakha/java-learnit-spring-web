@@ -10,6 +10,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.EncodedResourceResolver;
@@ -17,6 +18,8 @@ import org.springframework.web.servlet.resource.GzipResourceResolver;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
+
+import com.itbulls.learnit.spring.interceptors.DemoHandlerInterceptor;
 
 @EnableWebMvc
 @Configuration
@@ -49,6 +52,13 @@ public class WebConfig implements WebMvcConfigurer {
 	}
 
 	
+	
+	
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new DemoHandlerInterceptor())
+				.addPathPatterns("/test/simple-model-demo");
+	}
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
