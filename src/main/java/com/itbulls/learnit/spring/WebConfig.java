@@ -7,6 +7,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.LocaleResolver;
@@ -29,6 +31,10 @@ import com.itbulls.learnit.spring.interceptors.DemoHandlerInterceptor;
 @EnableWebMvc
 @Configuration
 @ComponentScan(basePackages = { "com.itbulls.learnit.spring" })
+@PropertySources({
+    @PropertySource("classpath:test.properties"),
+    @PropertySource("classpath:test2.properties")
+})
 public class WebConfig implements WebMvcConfigurer {
 
 	@Bean
