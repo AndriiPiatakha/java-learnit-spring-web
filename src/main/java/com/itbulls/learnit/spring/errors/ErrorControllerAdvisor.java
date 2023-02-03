@@ -28,6 +28,8 @@ public class ErrorControllerAdvisor {
 
 	@ExceptionHandler(NoHandlerFoundException.class)
 	public String handle(Exception ex) {
+		System.out.println(ex.getMessage());
+		ex.printStackTrace();
 		return "404";
 	}
 }
