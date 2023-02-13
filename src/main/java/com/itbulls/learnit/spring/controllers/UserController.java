@@ -1,5 +1,7 @@
 package com.itbulls.learnit.spring.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,7 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.itbulls.learnit.spring.model.UserModel;
 import com.itbulls.learnit.spring.model.UserModelValid;
+import com.itbulls.learnit.spring.persistence.entities.User;
+import com.itbulls.learnit.spring.persistence.repositories.RoleRepository;
+import com.itbulls.learnit.spring.persistence.repositories.UserRepository;
+import com.itbulls.learnit.spring.security.SetupDataLoader;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -22,6 +29,15 @@ import javax.validation.ValidatorFactory;
 @Controller
 @RequestMapping("/test")
 public class UserController {
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
+	@Autowired 
+	private RoleRepository roleRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	
 	@RequestMapping("/user-registration-form")
@@ -72,5 +88,33 @@ public class UserController {
 			return "registrationConfirmation";
 		}
 		
+	}
+	
+	// ======= USER REGISTRATION for Spring Security Demo
+	
+	@RequestMapping("/user-registration-form-security-demo")
+	public String userReegistrationSecurityDemo(Model model) {
+		model.addAttribute("user", new UserModelValid());
+		return "userRegistrationSecurityDemo";
+	}
+	
+	@RequestMapping("/create-user-security-demo")
+	public String registerNewUserAccount(@Valid @ModelAttribute("user") UserModel userModel, 
+			BindingResult br) {
+		
+		if (userRepository.findByEmail(userModel.getEmail()) != null) {
+	        throw new RuntimeException
+	          ("User with such email already exists: " + userModel.getEmail());
+	    }
+	    User user = new User();
+
+	    user.setFirstName(userModel.getFirstName());
+	    user.setLastName(userModel.getLastName());
+	    user.setPassword(passwordEncoder.encode(userModel.getPassword()));
+	    user.setEmail(userModel.getEmail());
+	    user.setEnabled(true);
+	    user.setRoles(Arrays.asList(roleRepository.findByName(SetupDataLoader.ROLE_USER)));
+	    userRepository.save(user);
+	    return "redirect:/test/login_page";
 	}
 }

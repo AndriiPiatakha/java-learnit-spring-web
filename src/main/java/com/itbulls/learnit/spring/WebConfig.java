@@ -1,5 +1,7 @@
 package com.itbulls.learnit.spring;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,14 +12,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -39,6 +47,8 @@ import org.springframework.web.servlet.view.JstlView;
 import com.itbulls.learnit.spring.interceptors.DemoHandlerInterceptor;
 import com.itbulls.learnit.spring.security.DefaultAuthenticationFailureHandler;
 import com.itbulls.learnit.spring.security.DefaultSuccessLogoutHandler;
+import com.itbulls.learnit.spring.security.DefaultUserDetailsService;
+import com.itbulls.learnit.spring.security.SetupDataLoader;
 
 @EnableWebMvc
 @EnableWebSecurity
@@ -145,54 +155,54 @@ public class WebConfig implements WebMvcConfigurer {
 //				.addResolver(new PathResourceResolver()); 
 //	}
 
-	// ================== SPRING SECURITY DEMO
+	// ================== SPRING SECURITY DEMO - first project
 
-	@Bean
-	public InMemoryUserDetailsManager userDetailsService() {
-		UserDetails user1 = User.withUsername("user1").password(passwordEncoder().encode("test1")).roles("CUSTOMER")
-				.build();
-		UserDetails user2 = User.withUsername("user2").password(passwordEncoder().encode("test2")).roles("CUSTOMER")
-				.build();
-		UserDetails admin = User.withUsername("admin").password(passwordEncoder().encode("root")).roles("ADMIN")
-				.build();
-		return new InMemoryUserDetailsManager(user1, user2, admin);
-	}
+//	@Bean
+//	public InMemoryUserDetailsManager userDetailsService() {
+//		UserDetails user1 = User.withUsername("user1").password(passwordEncoder().encode("test1")).roles("CUSTOMER")
+//				.build();
+//		UserDetails user2 = User.withUsername("user2").password(passwordEncoder().encode("test2")).roles("CUSTOMER")
+//				.build();
+//		UserDetails admin = User.withUsername("admin").password(passwordEncoder().encode("root")).roles("ADMIN")
+//				.build();
+//		return new InMemoryUserDetailsManager(user1, user2, admin);
+//	}
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
-	@Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    	http.csrf()
-	        .disable()
-	        .authorizeHttpRequests()
-		        .requestMatchers("/test/admin/**")
-		        .hasRole("ADMIN")
-		        .requestMatchers("/test/anonymous*")
-		        .anonymous()
-		        .requestMatchers("/test/login_page*")
-		        .permitAll()
-//		        .anyRequest()
-//		        .authenticated()
-	        .and()
-		        .formLogin()
-//		        .usernameParameter("email")		// in case you want to use different parameter 
-//		        .passwordParameter("pass")
-		        .loginPage("/test/login_page")
-		        .loginProcessingUrl("/test/perform_login")
-		        .defaultSuccessUrl("/test/homepage", false)
-		        .failureUrl("/test/login_page?error=true")
-		        .failureHandler(authenticationFailureHandler())
-	        .and()
-		        .logout()
-		        .logoutUrl("/test/perform_logout")
-		        .logoutSuccessUrl("/test/login_page")
-		        .deleteCookies("JSESSIONID")
-		        .logoutSuccessHandler(logoutSuccessHandler());
-    	return http.build();
-    }
+//	@Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//    	http.csrf()
+//	        .disable()
+//	        .authorizeHttpRequests()
+//		        .requestMatchers("/test/admin/**")
+//		        .hasRole("ADMIN")
+//		        .requestMatchers("/test/anonymous*")
+//		        .anonymous()
+//		        .requestMatchers("/test/login_page*")
+//		        .permitAll()
+////		        .anyRequest()
+////		        .authenticated()
+//	        .and()
+//		        .formLogin()
+////		        .usernameParameter("email")		// in case you want to use different parameter 
+////		        .passwordParameter("pass")
+//		        .loginPage("/test/login_page")
+//		        .loginProcessingUrl("/test/perform_login")
+//		        .defaultSuccessUrl("/test/homepage", false)
+//		        .failureUrl("/test/login_page?error=true")
+//		        .failureHandler(authenticationFailureHandler())
+//	        .and()
+//		        .logout()
+//		        .logoutUrl("/test/perform_logout")
+//		        .logoutSuccessUrl("/test/login_page")
+//		        .deleteCookies("JSESSIONID")
+//		        .logoutSuccessHandler(logoutSuccessHandler());
+//    	return http.build();
+//    }
 
 	@Bean
 	public AuthenticationFailureHandler authenticationFailureHandler() {
@@ -203,5 +213,46 @@ public class WebConfig implements WebMvcConfigurer {
 	public LogoutSuccessHandler logoutSuccessHandler() {
 		return new DefaultSuccessLogoutHandler();
 	}
+	
+	
+	// ============== Spring Security Roles and Privileges demo
+	
+
+	@Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    	http.csrf()
+	        .disable()
+	        .authorizeHttpRequests()
+		        .requestMatchers("/test/admin/**")
+		        .hasRole("ADMIN")
+		        .requestMatchers("/test/manager/**")
+		        .hasAuthority(SetupDataLoader.WRITE_PRIVILEGE)
+//		        .hasRole("MANAGER")
+		        .requestMatchers("/test/anonymous*")
+		        .anonymous()
+		        .requestMatchers("/test/login_page*", "/test/user-registration-form-security-demo", "/test/create-user-security-demo")
+		        .permitAll()
+		        .anyRequest()
+		        .authenticated()
+	        .and()
+		        .formLogin()
+		        .loginPage("/test/login_page")
+		        .loginProcessingUrl("/test/perform_login")
+		        .defaultSuccessUrl("/test/homepage", false)
+		        .failureUrl("/test/login_page?error=true")
+		        .failureHandler(authenticationFailureHandler())
+	        .and()
+		        .logout()
+		        .logoutUrl("/test/perform_logout")
+		        .deleteCookies("JSESSIONID")
+		        .logoutSuccessHandler(logoutSuccessHandler());
+    	return http.build();
+    }
+	
+	@Bean
+	public UserDetailsService userDetailsService() {
+		return new DefaultUserDetailsService();
+	}
+	
 
 }

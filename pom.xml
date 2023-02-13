@@ -53,6 +53,45 @@
 			<artifactId>spring-security-config</artifactId>
 			<version>${spring.security.version}</version>
 		</dependency>
+		
+		
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.28</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-dbcp2</artifactId>
+			<version>2.9.0</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>javax.persistence</groupId>
+		    <artifactId>javax.persistence-api</artifactId>
+		    <version>2.2</version>
+		</dependency>
+
+
+		<dependency>
+		    <groupId>org.hibernate</groupId>
+		    <artifactId>hibernate-core</artifactId>
+		    <version>5.6.14.Final</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-c3p0</artifactId>
+			<version>5.6.14.Final</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>6.2.5.Final</version>
+		</dependency>
 
 
 	</dependencies>
