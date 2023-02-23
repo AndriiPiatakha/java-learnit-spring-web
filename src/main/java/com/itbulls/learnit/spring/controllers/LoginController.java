@@ -12,4 +12,9 @@ public class LoginController {
 		return "login";
 	}
 	
+	@RequestMapping("/login_remember_me")
+	public String loginRememberMe() {
+		return "login_remember_me";
+	}
+	
 }

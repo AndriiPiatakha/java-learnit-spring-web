@@ -1,7 +1,5 @@
 package com.itbulls.learnit.spring;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,20 +10,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -38,9 +29,6 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.springframework.web.servlet.resource.EncodedResourceResolver;
-import org.springframework.web.servlet.resource.GzipResourceResolver;
-import org.springframework.web.servlet.resource.PathResourceResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
@@ -52,6 +40,8 @@ import com.itbulls.learnit.spring.security.SetupDataLoader;
 
 @EnableWebMvc
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true, 
+						securedEnabled = true)
 @Configuration
 @ComponentScan(basePackages = { "com.itbulls.learnit.spring" })
 @PropertySources({ @PropertySource("classpath:test.properties"), @PropertySource("classpath:test2.properties") })
@@ -218,6 +208,45 @@ public class WebConfig implements WebMvcConfigurer {
 	// ============== Spring Security Roles and Privileges demo
 	
 
+//	@Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//    	http.csrf()
+//	        .disable()
+//	        .authorizeHttpRequests()
+//		        .requestMatchers("/test/admin/**")
+//		        .hasRole("ADMIN")
+//		        .requestMatchers("/test/manager/**")
+//		        .hasAuthority(SetupDataLoader.WRITE_PRIVILEGE)
+////		        .hasRole("MANAGER")
+//		        .requestMatchers("/test/anonymous*")
+//		        .anonymous()
+//		        .requestMatchers("/test/login_page*", "/test/user-registration-form-security-demo", "/test/create-user-security-demo")
+//		        .permitAll()
+//		        .anyRequest()
+//		        .authenticated()
+//	        .and()
+//		        .formLogin()
+//		        .loginPage("/test/login_page")
+//		        .loginProcessingUrl("/test/perform_login")
+//		        .defaultSuccessUrl("/test/homepage", false)
+//		        .failureUrl("/test/login_page?error=true")
+//		        .failureHandler(authenticationFailureHandler())
+//	        .and()
+//		        .logout()
+//		        .logoutUrl("/test/perform_logout")
+//		        .deleteCookies("JSESSIONID")
+//		        .logoutSuccessHandler(logoutSuccessHandler());
+//    	return http.build();
+//    }
+	
+	@Bean
+	public UserDetailsService userDetailsService() {
+		return new DefaultUserDetailsService();
+	}
+	
+	
+	// ===== Remember Me Configuration 
+	
 	@Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     	http.csrf()
@@ -227,16 +256,15 @@ public class WebConfig implements WebMvcConfigurer {
 		        .hasRole("ADMIN")
 		        .requestMatchers("/test/manager/**")
 		        .hasAuthority(SetupDataLoader.WRITE_PRIVILEGE)
-//		        .hasRole("MANAGER")
 		        .requestMatchers("/test/anonymous*")
 		        .anonymous()
-		        .requestMatchers("/test/login_page*", "/test/user-registration-form-security-demo", "/test/create-user-security-demo")
+		        .requestMatchers("/test/login_remember_me*", "/test/user-registration-form-security-demo", "/test/create-user-security-demo")
 		        .permitAll()
 		        .anyRequest()
 		        .authenticated()
 	        .and()
 		        .formLogin()
-		        .loginPage("/test/login_page")
+		        .loginPage("/test/login_remember_me")
 		        .loginProcessingUrl("/test/perform_login")
 		        .defaultSuccessUrl("/test/homepage", false)
 		        .failureUrl("/test/login_page?error=true")
@@ -245,14 +273,15 @@ public class WebConfig implements WebMvcConfigurer {
 		        .logout()
 		        .logoutUrl("/test/perform_logout")
 		        .deleteCookies("JSESSIONID")
-		        .logoutSuccessHandler(logoutSuccessHandler());
+		        .logoutSuccessUrl("/test/login_remember_me")
+		     .and()
+		     	.rememberMe()
+		     	.key("superSecretKey")
+		        .rememberMeParameter("remember") // it is name of checkbox at login page  
+		        .rememberMeCookieName("rememberlogin"); // it is name of the cookie  
     	return http.build();
     }
 	
-	@Bean
-	public UserDetailsService userDetailsService() {
-		return new DefaultUserDetailsService();
-	}
 	
 
 }
