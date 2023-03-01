@@ -3,6 +3,7 @@ package com.itbulls.learnit.spring;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,6 +11,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,14 +38,14 @@ import org.springframework.web.servlet.view.JstlView;
 
 import com.itbulls.learnit.spring.interceptors.DemoHandlerInterceptor;
 import com.itbulls.learnit.spring.security.DefaultAuthenticationFailureHandler;
+import com.itbulls.learnit.spring.security.DefaultAuthenticationProvider;
 import com.itbulls.learnit.spring.security.DefaultSuccessLogoutHandler;
 import com.itbulls.learnit.spring.security.DefaultUserDetailsService;
 import com.itbulls.learnit.spring.security.SetupDataLoader;
 
 @EnableWebMvc
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true, 
-						securedEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @Configuration
 @ComponentScan(basePackages = { "com.itbulls.learnit.spring" })
 @PropertySources({ @PropertySource("classpath:test.properties"), @PropertySource("classpath:test2.properties") })
@@ -198,15 +202,13 @@ public class WebConfig implements WebMvcConfigurer {
 	public AuthenticationFailureHandler authenticationFailureHandler() {
 		return new DefaultAuthenticationFailureHandler();
 	}
-	
+
 	@Bean
 	public LogoutSuccessHandler logoutSuccessHandler() {
 		return new DefaultSuccessLogoutHandler();
 	}
-	
-	
+
 	// ============== Spring Security Roles and Privileges demo
-	
 
 //	@Bean
 //    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -238,15 +240,14 @@ public class WebConfig implements WebMvcConfigurer {
 //		        .logoutSuccessHandler(logoutSuccessHandler());
 //    	return http.build();
 //    }
-	
-	@Bean
-	public UserDetailsService userDetailsService() {
-		return new DefaultUserDetailsService();
-	}
-	
-	
-	// ===== Remember Me Configuration 
-	
+
+//	@Bean
+//	public UserDetailsService userDetailsService() {
+//		return new DefaultUserDetailsService();
+//	}
+
+	// ===== Remember Me Configuration
+
 	@Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     	http.csrf()
@@ -267,7 +268,6 @@ public class WebConfig implements WebMvcConfigurer {
 		        .loginPage("/test/login_remember_me")
 		        .loginProcessingUrl("/test/perform_login")
 		        .defaultSuccessUrl("/test/homepage", false)
-		        .failureUrl("/test/login_page?error=true")
 		        .failureHandler(authenticationFailureHandler())
 	        .and()
 		        .logout()
@@ -281,7 +281,27 @@ public class WebConfig implements WebMvcConfigurer {
 		        .rememberMeCookieName("rememberlogin"); // it is name of the cookie  
     	return http.build();
     }
+
 	
+	// ===== Demo for the Custom Authentication Provider
 	
+	@Bean
+	public UserDetailsService userDetailsService() {
+		return new DefaultUserDetailsService();
+	}
+	
+	@Bean
+	public AuthenticationProvider authProvider() {
+		return new DefaultAuthenticationProvider();
+	}
+
+	@Bean
+	public AuthenticationManager authManager(HttpSecurity http) throws Exception {
+		AuthenticationManagerBuilder authenticationManagerBuilder = http
+				.getSharedObject(AuthenticationManagerBuilder.class);
+		authenticationManagerBuilder.authenticationProvider(authProvider());
+		return authenticationManagerBuilder.build();
+	}
+
 
 }
