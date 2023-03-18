@@ -19,12 +19,12 @@ public class ErrorControllerAdvisor {
 		return "sql_error";
 	}
 
-	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "IOException occured")
-	@ExceptionHandler(IOException.class)
-	public void handleIOException() {
-		System.out.println("In the handleIOException() method");
-		// returning 404 error code
-	}
+//	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "IOException occured")
+//	@ExceptionHandler(IOException.class)
+//	public void handleIOException() {
+//		System.out.println("In the handleIOException() method");
+//		// returning 404 error code
+//	}
 
 	@ExceptionHandler(NoHandlerFoundException.class)
 	public String handle(Exception ex) {

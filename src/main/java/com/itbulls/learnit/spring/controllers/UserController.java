@@ -1,11 +1,15 @@
 package com.itbulls.learnit.spring.controllers;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -15,16 +19,6 @@ import com.itbulls.learnit.spring.persistence.entities.User;
 import com.itbulls.learnit.spring.persistence.repositories.RoleRepository;
 import com.itbulls.learnit.spring.persistence.repositories.UserRepository;
 import com.itbulls.learnit.spring.security.SetupDataLoader;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Valid;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 @Controller
 @RequestMapping("/test")
@@ -113,7 +107,7 @@ public class UserController {
 	    user.setPassword(passwordEncoder.encode(userModel.getPassword()));
 	    user.setEmail(userModel.getEmail());
 	    user.setEnabled(true);
-	    user.setRoles(Arrays.asList(roleRepository.findByName(SetupDataLoader.ROLE_USER)));
+	    user.setRoles(new HashSet(Arrays.asList(roleRepository.findByName(SetupDataLoader.ROLE_USER))));
 	    userRepository.save(user);
 	    return "redirect:/test/login_page";
 	}

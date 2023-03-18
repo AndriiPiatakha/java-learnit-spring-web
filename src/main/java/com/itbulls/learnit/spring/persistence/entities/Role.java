@@ -1,6 +1,7 @@
 package com.itbulls.learnit.spring.persistence.entities;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -19,8 +20,6 @@ public class Role {
     private Long id;
 
     private String name;
-    @ManyToMany(mappedBy = "roles")
-    private Collection<User> users;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -29,7 +28,7 @@ public class Role {
           name = "role_id", referencedColumnName = "id"), 
         inverseJoinColumns = @JoinColumn(
           name = "privilege_id", referencedColumnName = "id"))
-    private Collection<Privilege> privileges;
+    private Set<Privilege> privileges;
     
     public Role() {
 	}
@@ -38,7 +37,7 @@ public class Role {
 		this.name = roleName;
 	}
 
-	public void setPrivileges(Collection<Privilege> privileges) {
+	public void setPrivileges(Set<Privilege> privileges) {
 		this.privileges = privileges;
 	}
 
@@ -52,14 +51,6 @@ public class Role {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Collection<User> getUsers() {
-		return users;
-	}
-
-	public void setUsers(Collection<User> users) {
-		this.users = users;
 	}
 
 	public Collection<Privilege> getPrivileges() {

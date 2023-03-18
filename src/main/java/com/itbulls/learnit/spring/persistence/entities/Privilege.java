@@ -1,12 +1,9 @@
 package com.itbulls.learnit.spring.persistence.entities;
 
-import java.util.Collection;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 
 @Entity
 public class Privilege {
@@ -17,9 +14,6 @@ public class Privilege {
 
     private String name;
 
-    @ManyToMany(mappedBy = "privileges")
-    private Collection<Role> roles;
-    
     public Privilege() {
 	}
     
@@ -43,12 +37,5 @@ public class Privilege {
 		this.name = name;
 	}
 
-	public Collection<Role> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(Collection<Role> roles) {
-		this.roles = roles;
-	}
 	
 }

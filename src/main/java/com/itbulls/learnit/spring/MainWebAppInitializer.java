@@ -25,7 +25,7 @@ public class MainWebAppInitializer implements WebApplicationInitializer {
 		appServlet.addMapping("/");
 		appServlet.setInitParameter("throwExceptionIfNoHandlerFound", "true");
 		
-		sc.addFilter("securityFilter", new DelegatingFilterProxy("springSecurityFilterChain"))
-        	.addMappingForUrlPatterns(null, false, "/*");
+//		sc.addFilter("securityFilter", new DelegatingFilterProxy("springSecurityFilterChain"))
+//        	.addMappingForUrlPatterns(null, false, "/*");
 	}
 }

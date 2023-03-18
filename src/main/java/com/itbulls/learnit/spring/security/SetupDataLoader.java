@@ -2,6 +2,7 @@ package com.itbulls.learnit.spring.security;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -80,7 +81,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			user.setLastName("Admin");
 			user.setPassword(passwordEncoder.encode(password));
 			user.setEmail(email);
-			user.setRoles(Arrays.asList(role));
+			user.setRoles(new HashSet(Arrays.asList(role)));
 			user.setEnabled(true);
 			userRepository.save(user);
 		}
@@ -103,7 +104,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		Role role = roleRepository.findByName(name);
 		if (role == null) {
 			role = new Role(name);
-			role.setPrivileges(privileges);
+			role.setPrivileges(new HashSet(privileges));
 			roleRepository.save(role);
 		}
 		return role;

@@ -1,8 +1,12 @@
 package com.itbulls.learnit.spring;
 
+import java.util.Properties;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 
+import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +15,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.core.env.Environment;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -23,6 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
@@ -48,6 +58,9 @@ import com.itbulls.learnit.spring.security.SetupDataLoader;
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @Configuration
 @ComponentScan(basePackages = { "com.itbulls.learnit.spring" })
+@EnableTransactionManagement
+@EnableJpaRepositories("com.itbulls.learnit.spring.persistence.repositories.springdata")
+@PropertySource("classpath:database.properties")
 @PropertySources({ @PropertySource("classpath:test.properties"), @PropertySource("classpath:test2.properties") })
 public class WebConfig implements WebMvcConfigurer {
 
@@ -248,48 +261,29 @@ public class WebConfig implements WebMvcConfigurer {
 
 	// ===== Remember Me Configuration
 
-	@Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    	http.csrf()
-	        .disable()
-	        .authorizeHttpRequests()
-		        .requestMatchers("/test/admin/**")
-		        .hasRole("ADMIN")
-		        .requestMatchers("/test/manager/**")
-		        .hasAuthority(SetupDataLoader.WRITE_PRIVILEGE)
-		        .requestMatchers("/test/anonymous*")
-		        .anonymous()
-		        .requestMatchers("/test/login_remember_me*", "/test/user-registration-form-security-demo", "/test/create-user-security-demo")
-		        .permitAll()
-		        .anyRequest()
-		        .authenticated()
-	        .and()
-		        .formLogin()
-		        .loginPage("/test/login_remember_me")
-		        .loginProcessingUrl("/test/perform_login")
-		        .defaultSuccessUrl("/test/homepage", false)
-		        .failureHandler(authenticationFailureHandler())
-	        .and()
-		        .logout()
-		        .logoutUrl("/test/perform_logout")
-		        .deleteCookies("JSESSIONID")
-		        .logoutSuccessUrl("/test/login_remember_me")
-		     .and()
-		     	.rememberMe()
-		     	.key("superSecretKey")
-		        .rememberMeParameter("remember") // it is name of checkbox at login page  
-		        .rememberMeCookieName("rememberlogin"); // it is name of the cookie  
-    	return http.build();
-    }
+//	@Bean
+//	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//		http.csrf().disable().authorizeHttpRequests().requestMatchers("/test/admin/**").hasRole("ADMIN")
+//				.requestMatchers("/test/manager/**").hasAuthority(SetupDataLoader.WRITE_PRIVILEGE)
+//				.requestMatchers("/test/anonymous*").anonymous()
+//				.requestMatchers("/test/login_remember_me*", "/test/user-registration-form-security-demo",
+//						"/test/create-user-security-demo")
+//				.permitAll().anyRequest().authenticated().and().formLogin().loginPage("/test/login_remember_me")
+//				.loginProcessingUrl("/test/perform_login").defaultSuccessUrl("/test/homepage", false)
+//				.failureHandler(authenticationFailureHandler()).and().logout().logoutUrl("/test/perform_logout")
+//				.deleteCookies("JSESSIONID").logoutSuccessUrl("/test/login_remember_me").and().rememberMe()
+//				.key("superSecretKey").rememberMeParameter("remember") // it is name of checkbox at login page
+//				.rememberMeCookieName("rememberlogin"); // it is name of the cookie
+//		return http.build();
+//	}
 
-	
 	// ===== Demo for the Custom Authentication Provider
-	
+
 	@Bean
 	public UserDetailsService userDetailsService() {
 		return new DefaultUserDetailsService();
 	}
-	
+
 	@Bean
 	public AuthenticationProvider authProvider() {
 		return new DefaultAuthenticationProvider();
@@ -301,6 +295,52 @@ public class WebConfig implements WebMvcConfigurer {
 				.getSharedObject(AuthenticationManagerBuilder.class);
 		authenticationManagerBuilder.authenticationProvider(authProvider());
 		return authenticationManagerBuilder.build();
+	}
+
+	// ===== Spring Data JPA Configuration
+
+	private static final String PROPERTY_DRIVER = "driver";
+	private static final String PROPERTY_URL = "url";
+	private static final String PROPERTY_USERNAME = "user";
+	private static final String PROPERTY_PASSWORD = "password";
+	private static final String PROPERTY_SHOW_SQL = "hibernate.show_sql";
+	private static final String PROPERTY_DIALECT = "hibernate.dialect";
+
+	@Autowired
+	private Environment environment;
+	
+	@Bean
+	public DataSource dataSource() {
+		DriverManagerDataSource ds = new DriverManagerDataSource();
+		ds.setUrl(environment.getProperty(PROPERTY_URL));
+		ds.setUsername(environment.getProperty(PROPERTY_USERNAME));
+		ds.setPassword(environment.getProperty(PROPERTY_PASSWORD));
+		ds.setDriverClassName(environment.getProperty(PROPERTY_DRIVER));
+		return ds;
+	}
+
+	@Bean
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+		LocalContainerEntityManagerFactoryBean lfb = new LocalContainerEntityManagerFactoryBean();
+		lfb.setDataSource(dataSource());
+		lfb.setPackagesToScan("com.itbulls.learnit.spring.persistence.entities");
+		lfb.setPersistenceProviderClass(HibernatePersistenceProvider.class);
+		lfb.setJpaProperties(hibernateProps());
+		return lfb;
+	}
+
+	private Properties hibernateProps() {
+		Properties properties = new Properties();
+		properties.setProperty(PROPERTY_DIALECT, environment.getProperty(PROPERTY_DIALECT));
+		properties.setProperty(PROPERTY_SHOW_SQL, environment.getProperty(PROPERTY_SHOW_SQL));
+		return properties;
+	}
+
+	@Bean
+	public JpaTransactionManager transactionManager() {
+		JpaTransactionManager transactionManager = new JpaTransactionManager();
+		transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+		return transactionManager;
 	}
 
 
