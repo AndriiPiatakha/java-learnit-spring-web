@@ -14,10 +14,10 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @ControllerAdvice
 public class ErrorControllerAdvisor {
 
-	@ExceptionHandler(SQLException.class)
-	public String handleSQLException(HttpServletRequest request, Exception ex) {
-		return "sql_error";
-	}
+//	@ExceptionHandler(SQLException.class)
+//	public String handleSQLException(HttpServletRequest request, Exception ex) {
+//		return "sql_error";
+//	}
 
 //	@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "IOException occured")
 //	@ExceptionHandler(IOException.class)
