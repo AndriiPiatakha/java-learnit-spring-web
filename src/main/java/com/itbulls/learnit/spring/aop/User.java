@@ -3,7 +3,7 @@ package com.itbulls.learnit.spring.aop;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component("user")
+@Component("user-aop")
 public class User {
 	
 	@Value("John")

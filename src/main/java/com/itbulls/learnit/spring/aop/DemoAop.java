@@ -12,7 +12,7 @@ public class DemoAop {
 		context.scan("com.itbulls.learnit.spring.aop");
 		context.refresh();
 
-		User user = (User) context.getBean("user");
+		User user = (User) context.getBean("user-aop");
 		
 		System.out.println("===== First Method Demo =====");
 		System.out.println(user.getFirstName());

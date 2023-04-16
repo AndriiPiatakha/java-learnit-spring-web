@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -31,7 +32,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -48,18 +48,21 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
+import com.itbulls.learnit.spring.aop.DemoAop;
+import com.itbulls.learnit.spring.aop.DemoAspect;
+import com.itbulls.learnit.spring.aop.User;
 import com.itbulls.learnit.spring.interceptors.DemoHandlerInterceptor;
 import com.itbulls.learnit.spring.security.DefaultAuthenticationFailureHandler;
 import com.itbulls.learnit.spring.security.DefaultAuthenticationProvider;
 import com.itbulls.learnit.spring.security.DefaultSuccessLogoutHandler;
 import com.itbulls.learnit.spring.security.DefaultUserDetailsService;
-import com.itbulls.learnit.spring.security.SetupDataLoader;
 
 @EnableWebMvc
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @Configuration
-@ComponentScan(basePackages = { "com.itbulls.learnit.spring" })
+@ComponentScan(basePackages = { "com.itbulls.learnit.spring" }, excludeFilters = 
+		  {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {DemoAop.class, DemoAspect.class, User.class})})
 @EnableTransactionManagement
 @EnableJpaRepositories("com.itbulls.learnit.spring.persistence.repositories.springdata")
 @PropertySource("classpath:database.properties")

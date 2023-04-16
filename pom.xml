@@ -12,11 +12,11 @@
 		<spring.security.version>5.8.1</spring.security.version>
 		<spring.data.jpa.version>2.7.8</spring.data.jpa.version>
 		<serializer.version>2.9.4</serializer.version>
-		
+
 		<!-- Logging -->
 		<logback.version>1.0.13</logback.version>
 		<slf4j.version>1.7.5</slf4j.version>
-		
+
 		<!-- AspectJ -->
 		<aspectj.version>1.7.4</aspectj.version>
 	</properties>
@@ -32,6 +32,12 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>jstl</groupId>
@@ -119,7 +125,7 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${serializer.version}</version>
 		</dependency>
-		
+
 		<!-- Logging with SLF4J & LogBack -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -133,7 +139,7 @@
 			<version>${logback.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-		
+
 		<!-- AspectJ dependencies -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
@@ -146,6 +152,7 @@
 			<artifactId>aspectjtools</artifactId>
 			<version>${aspectj.version}</version>
 		</dependency>
+		
 
 	</dependencies>
 
