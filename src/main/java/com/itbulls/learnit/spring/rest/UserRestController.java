@@ -74,8 +74,7 @@ public class UserRestController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public String createRole(@RequestBody MultiValueMap<String, String> formData) {
-		formData.entrySet().stream().forEach(System.out::println);
-		return "Form data is printed to console";
+		return "Form data from request body: " + formData.entrySet();
 	}
 	
 	/*
@@ -157,7 +156,6 @@ public class UserRestController {
 	        System.out.println(String.format("Header '%s' = %s", key, value));
 	    });
 
-	    return new ResponseEntity<String>(
-	      String.format("Received %d headers", headers.size()), HttpStatus.OK);
+	    return new ResponseEntity<String>("Received headers: " + headers.entrySet(), HttpStatus.OK);
 	}
 }
